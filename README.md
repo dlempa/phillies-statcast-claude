@@ -1,6 +1,8 @@
 # Phillies Statcast 2026 — Claude Code edition
 
 > **Claude Code edition.** This is the parallel variant of [dlempa/phillies-statcast](https://github.com/dlempa/phillies-statcast), evolved exclusively with [Claude Code](https://claude.com/claude-code). The original repo continues under OpenAI Codex. See [COMPARISON.md](COMPARISON.md) for the head-to-head log between the two AI tools.
+>
+> **Live app:** https://phillies-statcast-claude.streamlit.app
 
 A simple Streamlit app that tracks the biggest Phillies home runs and other standout Statcast moments from the 2026 season using only free tools.
 

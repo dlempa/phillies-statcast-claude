@@ -1,0 +1,4 @@
+duckdb>=1.2.0
+pandas>=2.2.0
+pybaseball>=2.2.7
+streamlit>=1.43.0

@@ -10,12 +10,14 @@ from phillies_stats.ingest import upsert_pitcher_season_summary
 from phillies_stats.queries import (
     get_dashboard_metrics,
     get_hardest_hit_balls,
+    get_phillies_batted_ball_scatter,
     get_pitcher_home_run_allowed_leaders,
     get_pitcher_profile,
     get_pitcher_strikeout_leaders,
     get_pitcher_walks_leaders,
     get_pitcher_wins_leaders,
     get_team_pitching_run_prevention_trend,
+    get_team_rolling_run_trend,
     get_player_options,
     get_player_summary,
     get_player_hr_distance_stats,
@@ -656,6 +658,142 @@ class QueryTests(unittest.TestCase):
         fastest = profile["fastest_pitches"]
         self.assertEqual(len(fastest), 2)
         self.assertEqual(fastest.iloc[0]["release_speed"], 92.0)
+
+    def test_top_longest_home_runs_includes_batter_id_for_headshots(self):
+        events = sample_events_frame(
+            sample_event(
+                event_id="schwarber-leader",
+                game_pk=1101,
+                game_date_value=date(2026, 4, 1),
+                batter_name="Kyle Schwarber",
+                batter_id=656941,
+                hit_distance_sc=470.0,
+                launch_speed=112.0,
+                launch_angle=27.0,
+            ),
+            sample_event(
+                event_id="harper-runner",
+                game_pk=1102,
+                game_date_value=date(2026, 4, 2),
+                batter_name="Bryce Harper",
+                batter_id=547180,
+                hit_distance_sc=420.0,
+                launch_speed=108.0,
+                launch_angle=29.0,
+            ),
+        )
+
+        with TempDatabase() as conn:
+            upsert_statcast_data(conn, events, season=2026)
+            leaderboard = get_top_longest_home_runs(conn, limit=5)
+
+        self.assertIn("batter_id", leaderboard.columns)
+        self.assertEqual(int(leaderboard.iloc[0]["batter_id"]), 656941)
+        self.assertEqual(int(leaderboard.iloc[1]["batter_id"]), 547180)
+
+    def test_player_summary_returns_mlbam_id(self):
+        events = sample_events_frame(
+            sample_event(
+                event_id="harper-mlbam",
+                game_pk=2101,
+                game_date_value=date(2026, 4, 5),
+                batter_name="Bryce Harper",
+                batter_id=547180,
+                hit_distance_sc=405.0,
+                launch_speed=109.4,
+                launch_angle=24.0,
+            )
+        )
+
+        with TempDatabase() as conn:
+            upsert_statcast_data(conn, events, season=2026)
+            profile = get_player_summary(conn, "Bryce Harper")
+
+        self.assertEqual(profile["mlbam_id"], 547180)
+
+    def test_phillies_batted_ball_scatter_returns_hr_and_other_balls(self):
+        events = sample_events_frame(
+            sample_event(
+                event_id="bbs-hr",
+                game_pk=3101,
+                game_date_value=date(2026, 4, 6),
+                batter_name="Trea Turner",
+                batter_id=607208,
+                hit_distance_sc=412.0,
+                launch_speed=105.0,
+                launch_angle=28.0,
+                events="home_run",
+                is_home_run=True,
+            ),
+            sample_event(
+                event_id="bbs-single",
+                game_pk=3102,
+                game_date_value=date(2026, 4, 7),
+                batter_name="Trea Turner",
+                batter_id=607208,
+                hit_distance_sc=185.0,
+                launch_speed=98.0,
+                launch_angle=10.0,
+                events="single",
+                is_home_run=False,
+            ),
+            sample_event(
+                event_id="bbs-no-launch-data",
+                game_pk=3103,
+                game_date_value=date(2026, 4, 8),
+                batter_name="Trea Turner",
+                batter_id=607208,
+                hit_distance_sc=None,
+                launch_speed=None,
+                launch_angle=None,
+                events="walk",
+                is_home_run=False,
+            ),
+        )
+
+        with TempDatabase() as conn:
+            upsert_statcast_data(conn, events, season=2026)
+            scatter = get_phillies_batted_ball_scatter(conn)
+
+        self.assertEqual(len(scatter), 2)
+        hit_types = scatter["hit_type"].tolist()
+        self.assertIn("Home Run", hit_types)
+        self.assertIn("Other", hit_types)
+        self.assertTrue(set(["exit_velocity_mph", "launch_angle", "is_home_run"]).issubset(scatter.columns))
+
+    def test_team_rolling_run_trend_computes_window_mean(self):
+        rows = [
+            _pitching_event(
+                f"rolling-game-{idx}",
+                4100 + idx,
+                date(2026, 5, idx + 1),
+                home_team="PHI",
+                away_team="ATL",
+                post_home_score=5 + idx,
+                post_away_score=2 + idx,
+            )
+            for idx in range(6)
+        ]
+
+        with TempDatabase() as conn:
+            upsert_statcast_data(conn, sample_events_frame(*rows), season=2026)
+            trend = get_team_rolling_run_trend(conn, window=3)
+
+        self.assertEqual(len(trend), 6)
+        self.assertIn("rolling_runs_for", trend.columns)
+        self.assertIn("rolling_runs_against", trend.columns)
+        # First two rows are below the window — should be NaN
+        self.assertTrue(trend.iloc[0]["rolling_runs_for"] != trend.iloc[0]["rolling_runs_for"])
+        # Window of 3 starting at index 2 averages runs_for=[5,6,7] = 6.0
+        self.assertEqual(trend.iloc[2]["rolling_runs_for"], 6.0)
+        self.assertEqual(trend.iloc[2]["rolling_runs_against"], 3.0)
+        # Last row averages runs_for=[8,9,10] = 9.0
+        self.assertEqual(trend.iloc[5]["rolling_runs_for"], 9.0)
+
+    def test_team_rolling_run_trend_empty_when_no_games(self):
+        with TempDatabase() as conn:
+            trend = get_team_rolling_run_trend(conn, window=10)
+        self.assertTrue(trend.empty)
 
     def test_pitcher_strikeout_leaders_handles_missing_season_summary(self):
         pitching_events = sample_events_frame(

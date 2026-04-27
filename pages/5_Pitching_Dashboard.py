@@ -24,7 +24,16 @@ from phillies_stats.queries import (
     get_pitching_dashboard_metrics,
     get_team_pitching_run_prevention_trend,
 )
-from phillies_stats.ui import apply_app_theme, format_card, format_timestamp, render_page_header, render_section_heading, render_stat_cards, style_chart
+from phillies_stats.ui import (
+    apply_app_theme,
+    format_card,
+    format_timestamp,
+    render_page_header,
+    render_section_heading,
+    render_skeleton_block,
+    render_stat_cards,
+    style_chart,
+)
 
 
 def build_metric_card(label: str, result: tuple[object, object] | None, suffix: str, tone: str = "default") -> dict[str, str]:
@@ -73,7 +82,10 @@ with primary_col:
             "Runs allowed by game with a 5-game staff RA/G trend and season-to-date RA/G reference.",
         )
         if run_prevention_trend.empty:
-            st.info("Run prevention trend data will appear once completed Phillies games are loaded.")
+            render_skeleton_block(
+                "Run prevention trend will appear once completed Phillies games are loaded",
+                kind="chart",
+            )
         else:
             chart_data = run_prevention_trend.copy()
             latest_season_ra = chart_data["season_ra_per_game"].iloc[-1]

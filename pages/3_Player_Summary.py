@@ -23,6 +23,7 @@ from phillies_stats.ui import (
     render_page_header,
     render_profile_header,
     render_section_heading,
+    render_skeleton_block,
     render_stat_cards,
     style_chart,
 )
@@ -41,7 +42,9 @@ render_page_header(
 
 players = get_player_options(conn)
 if not players:
-    st.info("No player summaries are available yet. Load some Statcast data first.")
+    render_skeleton_block(
+        "Hitter profiles will appear once Statcast data is loaded", kind="cards"
+    )
 else:
     with st.container(border=True):
         render_section_heading("Select a Hitter", "Pick a Phillies hitter to switch the profile view.")
@@ -53,6 +56,7 @@ else:
     monthly = player_summary["monthly"]
     home_runs = player_summary["home_runs"]
     league_context = player_summary["league_context"]
+    mlbam_id = player_summary.get("mlbam_id")
 
     if not summary:
         with st.container(border=True):
@@ -60,6 +64,7 @@ else:
                 selected_player,
                 "Current-season MLB context for the selected Phillies hitter.",
                 chip="Hitter Profile",
+                mlbam_id=mlbam_id,
             )
             render_section_heading("League Context Ratings", "Current-season production compared with MLB hitter baselines.")
             st.html(
@@ -77,6 +82,7 @@ else:
                 selected_player,
                 "Home run production, distance, and quality of contact for the current season.",
                 chip="Hitter Profile",
+                mlbam_id=mlbam_id,
             )
             render_stat_cards(
                 [

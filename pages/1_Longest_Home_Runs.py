@@ -15,7 +15,15 @@ from phillies_stats.config import get_config
 from phillies_stats.database import get_connection, initialize_database
 from phillies_stats.display import format_metric_value, render_highlight_table
 from phillies_stats.queries import get_month_options, get_player_options, get_top_longest_home_runs
-from phillies_stats.ui import apply_app_theme, render_filter_caption, render_page_header, render_section_heading, render_stat_cards
+from phillies_stats.ui import (
+    apply_app_theme,
+    render_filter_caption,
+    render_leader_headshot_card,
+    render_page_header,
+    render_section_heading,
+    render_skeleton_block,
+    render_stat_cards,
+)
 
 
 config = get_config()
@@ -50,12 +58,29 @@ results = get_top_longest_home_runs(
 )
 
 if results.empty:
-    st.info("No home runs match the current filters yet.")
+    render_skeleton_block(
+        "No home runs match the current filters yet — leaderboard preview", kind="table"
+    )
 else:
     leader = results.iloc[0]
     cutline = results["distance_ft"].min()
     average_distance = results["distance_ft"].mean()
     represented_players = results["player_name"].nunique()
+
+    leader_mlbam_id = None
+    leader_batter_id = leader.get("batter_id") if hasattr(leader, "get") else None
+    if leader_batter_id is not None and not (isinstance(leader_batter_id, float) and leader_batter_id != leader_batter_id):
+        try:
+            leader_mlbam_id = int(leader_batter_id)
+        except (TypeError, ValueError):
+            leader_mlbam_id = None
+
+    render_leader_headshot_card(
+        mlbam_id=leader_mlbam_id,
+        eyebrow="Current #1",
+        name=str(leader["player_name"]),
+        line=f"{format_metric_value(leader['distance_ft'])} ft · {format_metric_value(leader['exit_velocity_mph'])} mph",
+    )
 
     render_stat_cards(
         [
@@ -88,7 +113,7 @@ else:
             "Top 10 Leaderboard",
             "Rank, player, and distance are visually prioritized, while exit velocity and launch angle stay secondary.",
         )
-        display = results.rename(
+        display = results.drop(columns=["batter_id"], errors="ignore").rename(
             columns={
                 "rank": "Rank",
                 "player_name": "Player",

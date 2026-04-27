@@ -143,6 +143,7 @@ def get_top_longest_home_runs(
                 ORDER BY distance_ft DESC NULLS LAST, exit_velocity_mph DESC NULLS LAST, game_date ASC, player_name ASC
             ) AS rank,
             player_name,
+            batter_id,
             game_date,
             opponent,
             venue_name,
@@ -333,7 +334,95 @@ def get_player_summary(conn: duckdb.DuckDBPyConnection, player_name: str) -> dic
 
     league_context = get_hitter_league_context_ratings(conn, player_name)
 
-    return {"summary": hr_summary, "monthly": monthly, "home_runs": home_runs, "league_context": league_context}
+    mlbam_id = _lookup_hitter_mlbam_id(conn, player_name)
+
+    return {
+        "summary": hr_summary,
+        "monthly": monthly,
+        "home_runs": home_runs,
+        "league_context": league_context,
+        "mlbam_id": mlbam_id,
+    }
+
+
+def _lookup_hitter_mlbam_id(conn: duckdb.DuckDBPyConnection, player_name: str) -> int | None:
+    rows = conn.execute(
+        """
+        SELECT batter_id, COALESCE(p.player_name, e.batter_name) AS player_name
+        FROM statcast_events e
+        LEFT JOIN players p ON e.batter_id = p.player_id
+        WHERE e.is_phillies_batter = TRUE
+          AND e.batter_id IS NOT NULL
+          AND COALESCE(p.player_name, e.batter_name) IS NOT NULL
+        GROUP BY batter_id, COALESCE(p.player_name, e.batter_name)
+        """
+    ).fetchall()
+    if not rows:
+        return None
+    target = normalize_player_key(format_player_name(player_name))
+    if not target:
+        return None
+    for batter_id, name in rows:
+        if normalize_player_key(format_player_name(name)) == target and batter_id is not None:
+            try:
+                return int(batter_id)
+            except (TypeError, ValueError):
+                continue
+    return None
+
+
+def get_phillies_batted_ball_scatter(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:
+    return conn.execute(
+        """
+        SELECT
+            COALESCE(p.player_name, e.batter_name) AS player_name,
+            e.game_date,
+            e.opponent,
+            e.launch_speed AS exit_velocity_mph,
+            e.launch_angle,
+            CASE WHEN e.is_home_run THEN 'Home Run' ELSE 'Other' END AS hit_type,
+            COALESCE(e.is_home_run, FALSE) AS is_home_run
+        FROM statcast_events e
+        LEFT JOIN players p ON e.batter_id = p.player_id
+        WHERE e.is_phillies_batter = TRUE
+          AND e.launch_speed IS NOT NULL
+          AND e.launch_angle IS NOT NULL
+        ORDER BY e.is_home_run ASC, e.launch_speed ASC
+        """
+    ).df()
+
+
+def get_team_rolling_run_trend(
+    conn: duckdb.DuckDBPyConnection,
+    *,
+    window: int = 10,
+) -> pd.DataFrame:
+    frame = conn.execute(
+        """
+        SELECT
+            game_date,
+            CASE WHEN phillies_home THEN home_score ELSE away_score END AS runs_for,
+            CASE WHEN phillies_home THEN away_score ELSE home_score END AS runs_against
+        FROM games
+        WHERE result_text IS NOT NULL
+        ORDER BY game_date ASC, game_pk ASC
+        """
+    ).df()
+    if frame.empty:
+        return frame
+
+    frame["runs_for"] = pd.to_numeric(frame["runs_for"], errors="coerce").fillna(0)
+    frame["runs_against"] = pd.to_numeric(frame["runs_against"], errors="coerce").fillna(0)
+    frame["game_number"] = range(1, len(frame) + 1)
+    window_size = max(1, int(window))
+    min_periods = min(window_size, max(1, len(frame)))
+    frame["rolling_runs_for"] = (
+        frame["runs_for"].rolling(window=window_size, min_periods=min_periods).mean().round(2)
+    )
+    frame["rolling_runs_against"] = (
+        frame["runs_against"].rolling(window=window_size, min_periods=min_periods).mean().round(2)
+    )
+    return frame
 
 
 def get_game_log(conn: duckdb.DuckDBPyConnection) -> pd.DataFrame:

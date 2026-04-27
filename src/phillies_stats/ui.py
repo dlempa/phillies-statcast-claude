@@ -257,6 +257,42 @@ div.stButton > button:hover {
     box-shadow: var(--ph-shadow);
 }
 
+.state-summary-panel--hero {
+    background: linear-gradient(135deg, #ffffff 0%, #fff8f9 55%, #ffe9ec 100%);
+    border-left-width: 6px;
+    padding: 1.5rem 1.75rem 1.65rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 14px 32px rgba(31, 41, 51, 0.10);
+}
+
+.state-summary-panel--hero .state-summary-title {
+    font-size: 2.15rem;
+    line-height: 1.05;
+}
+
+.state-summary-panel--hero .state-summary-headline {
+    font-size: 1.18rem;
+    line-height: 1.32;
+    margin-top: 0.5rem;
+    max-width: 60rem;
+}
+
+.state-summary-panel--hero .state-summary-copy {
+    font-size: 1.05rem;
+    line-height: 1.6;
+    margin-top: 0.45rem;
+}
+
+.state-summary-panel--hero .state-summary-visual {
+    width: 4rem;
+    height: 4rem;
+}
+
+.state-summary-panel--hero .state-summary-visual .phillies-logo-mark {
+    width: 3.3rem;
+    height: 3.3rem;
+}
+
 .state-summary-header {
     display: flex;
     justify-content: space-between;
@@ -638,6 +674,184 @@ table.phillies-table .cell-rank {
     font-weight: 700;
 }
 
+.player-headshot-frame {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 3px solid var(--ph-accent);
+    background: linear-gradient(135deg, #ffffff 0%, var(--ph-accent-soft) 100%);
+    box-shadow: 0 6px 16px rgba(31, 41, 51, 0.12);
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+}
+
+.player-headshot-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.player-headshot-fallback {
+    color: var(--ph-accent-dark);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    font-size: 2.6rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.player-headshot-frame--lg {
+    width: 160px;
+    height: 160px;
+    border-width: 4px;
+}
+
+.player-headshot-frame--lg .player-headshot-fallback {
+    font-size: 3.4rem;
+}
+
+.player-headshot-frame--sm {
+    width: 64px;
+    height: 64px;
+    border-width: 2px;
+}
+
+.player-headshot-frame--sm .player-headshot-fallback {
+    font-size: 1.45rem;
+}
+
+.profile-header.profile-header--with-headshot {
+    align-items: center;
+    gap: 1.25rem;
+}
+
+.profile-header--with-headshot .profile-header-text {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.leader-headshot-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 0.85rem;
+}
+
+.leader-headshot-row .player-headshot-frame {
+    flex: 0 0 auto;
+}
+
+.leader-headshot-row .leader-headshot-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    min-width: 0;
+}
+
+.leader-headshot-row .leader-headshot-eyebrow {
+    color: var(--ph-muted);
+    font-size: 0.78rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.leader-headshot-row .leader-headshot-name {
+    color: var(--ph-text);
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    font-size: 1.55rem;
+    font-weight: 700;
+    line-height: 1.1;
+}
+
+.leader-headshot-row .leader-headshot-line {
+    color: var(--ph-accent-dark);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.skeleton-block {
+    border: 1px solid var(--ph-border);
+    border-left: 3px solid var(--ph-accent);
+    border-radius: 8px;
+    background: var(--ph-panel);
+    padding: 1rem 1.15rem 1.15rem;
+    box-shadow: var(--ph-shadow);
+    margin: 0.25rem 0 0.6rem;
+}
+
+.skeleton-block .skeleton-label {
+    color: var(--ph-muted);
+    font-size: 0.84rem;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    font-weight: 700;
+    margin-bottom: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.skeleton-block .skeleton-label::before {
+    content: "";
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    background: var(--ph-accent);
+    box-shadow: 0 0 0 3px rgba(232, 24, 40, 0.14);
+}
+
+.skeleton-bar {
+    background: linear-gradient(90deg, #f1f3f5 0%, #e9ecef 50%, #f1f3f5 100%);
+    border-radius: 6px;
+    height: 0.85rem;
+}
+
+.skeleton-block--chart .skeleton-chart-area {
+    background: linear-gradient(180deg, #f6f8fa 0%, #eceff3 100%);
+    border-radius: 8px;
+    height: 14rem;
+    display: flex;
+    align-items: end;
+    gap: 0.6rem;
+    padding: 0.85rem 0.85rem 0.6rem;
+}
+
+.skeleton-block--chart .skeleton-chart-bar {
+    flex: 1 1 0;
+    background: linear-gradient(180deg, rgba(232, 24, 40, 0.22) 0%, rgba(232, 24, 40, 0.08) 100%);
+    border-radius: 6px 6px 0 0;
+    min-width: 0;
+}
+
+.skeleton-block--table .skeleton-bar + .skeleton-bar {
+    margin-top: 0.55rem;
+}
+
+.skeleton-block--table .skeleton-bar:nth-child(odd) {
+    width: 92%;
+}
+
+.skeleton-block--table .skeleton-bar:nth-child(even) {
+    width: 78%;
+}
+
+.skeleton-block--cards .skeleton-card-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.65rem;
+}
+
+.skeleton-block--cards .skeleton-card {
+    background: linear-gradient(180deg, #f6f8fa 0%, #eceff3 100%);
+    border-radius: 8px;
+    height: 5.5rem;
+}
+
 @media (max-width: 760px) {
     .block-container {
         padding-left: 1rem;
@@ -663,6 +877,18 @@ table.phillies-table .cell-rank {
         max-width: none;
     }
 
+    .profile-header.profile-header--with-headshot {
+        flex-wrap: wrap;
+    }
+
+    .leader-headshot-row {
+        flex-wrap: wrap;
+    }
+
+    .skeleton-block--cards .skeleton-card-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
 }
 </style>
 """
@@ -670,6 +896,11 @@ table.phillies-table .cell-rank {
 
 def apply_app_theme() -> None:
     st.markdown(APP_CSS, unsafe_allow_html=True)
+    if PHILLIES_LOGO_PATH.exists():
+        try:
+            st.logo(str(PHILLIES_LOGO_PATH), icon_image=str(PHILLIES_LOGO_PATH))
+        except Exception:
+            pass
 
 
 def _logo_data_uri() -> str | None:
@@ -727,7 +958,7 @@ def render_section_heading(title: str, subtitle: str | None = None) -> None:
     )
 
 
-def render_team_state_summary(summary: dict[str, object] | None) -> None:
+def render_team_state_summary(summary: dict[str, object] | None, *, as_hero: bool = False) -> None:
     if not summary:
         return
 
@@ -747,9 +978,10 @@ def render_team_state_summary(summary: dict[str, object] | None) -> None:
     source_html = _state_summary_sources_html(_json_list(summary.get("sources_json")))
     visual_html = f"<div class='state-summary-visual' aria-hidden='true'>{render_logo_mark()}</div>"
 
+    panel_class = "state-summary-panel state-summary-panel--hero" if as_hero else "state-summary-panel"
     st.html(
         f"""
-        <section class="state-summary-panel">
+        <section class="{panel_class}">
             <div class="state-summary-header">
                 <div class="state-summary-heading">
                     <h2 class="state-summary-title">{escape(card_title)}</h2>
@@ -772,16 +1004,101 @@ def render_filter_caption(text: str) -> None:
     st.html(f"<div class='filter-caption'>{escape(text)}</div>")
 
 
-def render_profile_header(name: str, subtitle: str, chip: str | None = None) -> None:
+def render_profile_header(
+    name: str,
+    subtitle: str,
+    chip: str | None = None,
+    *,
+    mlbam_id: int | None = None,
+) -> None:
     chip_html = f"<div class='profile-chip'>{escape(chip)}</div>" if chip else ""
+    headshot_html = ""
+    header_class = "profile-header"
+    if mlbam_id is not None:
+        headshot_html = _player_headshot_html(mlbam_id, name=name, size="lg")
+        header_class = "profile-header profile-header--with-headshot"
     st.html(
         f"""
-        <div class="profile-header">
-            <div>
+        <div class="{header_class}">
+            {headshot_html}
+            <div class="profile-header-text">
                 <h2 class="profile-title">{escape(name)}</h2>
                 <div class="profile-subtitle">{escape(subtitle)}</div>
             </div>
             {chip_html}
+        </div>
+        """,
+    )
+
+
+def _player_headshot_html(mlbam_id: int | None, *, name: str | None = None, size: str = "md") -> str:
+    size_class = {"sm": "player-headshot-frame--sm", "lg": "player-headshot-frame--lg"}.get(size, "")
+    frame_class = f"player-headshot-frame {size_class}".strip()
+    initial = ""
+    if name:
+        cleaned = str(name).strip()
+        if cleaned:
+            initial = cleaned[0].upper()
+    fallback_html = f"<div class='player-headshot-fallback'>{escape(initial or 'P')}</div>"
+    if mlbam_id is None:
+        return f"<div class='{frame_class}' role='img' aria-label='Player headshot placeholder'>{fallback_html}</div>"
+    alt_text = escape(name) if name else "Phillies player headshot"
+    url = f"https://midfield.mlbstatic.com/v1/people/{int(mlbam_id)}/spots/120"
+    return (
+        f"<div class='{frame_class}' role='img' aria-label='Headshot of {alt_text}'>"
+        f"<img src='{url}' alt='{alt_text}' loading='lazy'"
+        f" onerror=\"this.replaceWith(Object.assign(document.createElement('div'),"
+        f" {{className:'player-headshot-fallback',innerText:'{escape(initial or 'P')}'}}))\" />"
+        f"</div>"
+    )
+
+
+def render_player_headshot(mlbam_id: int | None, *, name: str | None = None, size: str = "md") -> None:
+    st.html(_player_headshot_html(mlbam_id, name=name, size=size))
+
+
+def render_leader_headshot_card(
+    *,
+    mlbam_id: int | None,
+    eyebrow: str,
+    name: str,
+    line: str | None = None,
+) -> None:
+    headshot_html = _player_headshot_html(mlbam_id, name=name, size="lg")
+    line_html = f"<div class='leader-headshot-line'>{escape(line)}</div>" if line else ""
+    st.html(
+        f"""
+        <div class="leader-headshot-row">
+            {headshot_html}
+            <div class="leader-headshot-meta">
+                <div class="leader-headshot-eyebrow">{escape(eyebrow)}</div>
+                <div class="leader-headshot-name">{escape(name)}</div>
+                {line_html}
+            </div>
+        </div>
+        """,
+    )
+
+
+def render_skeleton_block(label: str, *, kind: str = "chart") -> None:
+    if kind == "table":
+        body = "".join(["<div class='skeleton-bar'></div>"] * 4)
+    elif kind == "cards":
+        cards = "".join(["<div class='skeleton-card'></div>"] * 3)
+        body = f"<div class='skeleton-card-row'>{cards}</div>"
+    else:
+        bars = "".join(
+            [
+                f"<div class='skeleton-chart-bar' style='height: {height}%'></div>"
+                for height in (45, 78, 60, 92, 70, 55, 84, 48)
+            ]
+        )
+        body = f"<div class='skeleton-chart-area'>{bars}</div>"
+    st.html(
+        f"""
+        <div class="skeleton-block skeleton-block--{escape(kind)}">
+            <div class="skeleton-label">{escape(label)}</div>
+            {body}
         </div>
         """,
     )

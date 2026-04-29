@@ -257,6 +257,7 @@ def create_views(conn: duckdb.DuckDBPyConnection) -> None:
             ROW_NUMBER() OVER (
                 ORDER BY hit_distance_sc DESC NULLS LAST, launch_speed DESC NULLS LAST, game_date ASC, event_id ASC
             ) AS rank,
+            batter_id,
             batter_name AS player_name,
             game_date,
             opponent,

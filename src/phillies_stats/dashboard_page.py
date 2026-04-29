@@ -14,7 +14,16 @@ from phillies_stats.queries import (
     get_player_hr_distance_stats,
     get_top_longest_home_runs,
 )
-from phillies_stats.ui import apply_app_theme, format_card, format_timestamp, render_page_header, render_section_heading, render_stat_cards, style_chart
+from phillies_stats.ui import (
+    apply_app_theme,
+    format_card,
+    format_timestamp,
+    render_page_header,
+    render_section_heading,
+    render_skeleton_block,
+    render_stat_cards,
+    style_chart,
+)
 
 
 def _format_metric(result, unit: str, fallback: str = "No data yet") -> tuple[str, str]:
@@ -47,7 +56,9 @@ def render_hitter_dashboard() -> None:
     )
 
     if not last_updated:
-        st.info("No Statcast data is loaded yet. Run the bootstrap script to backfill the season.")
+        render_skeleton_block(
+            "Hitter dashboard cards will appear after the daily refresh", kind="cards"
+        )
 
     render_stat_cards(
         [
@@ -99,7 +110,7 @@ def render_hitter_dashboard() -> None:
             if top_10.empty:
                 st.info("No home run data is available yet.")
             else:
-                preview = top_10.rename(
+                preview = top_10.drop(columns=["batter_id"], errors="ignore").rename(
                     columns={
                         "rank": "Rank",
                         "player_name": "Player",

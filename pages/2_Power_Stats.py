@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from pathlib import Path
 
+import altair as alt
 import streamlit as st
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -16,10 +17,20 @@ from phillies_stats.display import format_metric_value, render_highlight_table
 from phillies_stats.queries import (
     get_hardest_hit_balls,
     get_hardest_hit_home_runs,
+    get_phillies_batted_ball_scatter,
     get_player_hr_distance_stats,
     get_shortest_home_runs,
 )
-from phillies_stats.ui import apply_app_theme, render_page_header, render_section_heading, render_stat_cards
+from phillies_stats.ui import (
+    PHILLIES_MUTED,
+    PHILLIES_RED,
+    apply_app_theme,
+    render_page_header,
+    render_section_heading,
+    render_skeleton_block,
+    render_stat_cards,
+    style_chart,
+)
 
 
 config = get_config()
@@ -79,6 +90,65 @@ if not hardest_balls.empty:
 
 if card_data:
     render_stat_cards(card_data)
+
+with st.container(border=True):
+    render_section_heading(
+        "Exit Velocity vs Launch Angle",
+        "Every Phillies batted ball this season. Home runs glow red against the rest of contact in grey.",
+    )
+    scatter_frame = get_phillies_batted_ball_scatter(conn)
+    if scatter_frame.empty:
+        render_skeleton_block("EV / launch-angle scatter loading", kind="chart")
+    else:
+        non_hr = scatter_frame[~scatter_frame["is_home_run"].astype(bool)]
+        hr = scatter_frame[scatter_frame["is_home_run"].astype(bool)]
+
+        encoding = {
+            "x": alt.X(
+                "exit_velocity_mph:Q",
+                title="Exit velocity (mph)",
+                scale=alt.Scale(zero=False, nice=True),
+            ),
+            "y": alt.Y(
+                "launch_angle:Q",
+                title="Launch angle (deg)",
+                scale=alt.Scale(zero=False, nice=True),
+            ),
+            "tooltip": [
+                alt.Tooltip("player_name:N", title="Player"),
+                alt.Tooltip("game_date:T", title="Date"),
+                alt.Tooltip("opponent:N", title="Opponent"),
+                alt.Tooltip("exit_velocity_mph:Q", title="EV (mph)", format=".1f"),
+                alt.Tooltip("launch_angle:Q", title="LA (deg)", format=".1f"),
+                alt.Tooltip("hit_type:N", title="Result"),
+            ],
+        }
+
+        layers: list[alt.Chart] = []
+        if not non_hr.empty:
+            layers.append(
+                alt.Chart(non_hr)
+                .mark_circle(size=42, color=PHILLIES_MUTED, opacity=0.32)
+                .encode(**encoding)
+            )
+        if not hr.empty:
+            layers.append(
+                alt.Chart(hr)
+                .mark_circle(
+                    size=110,
+                    color=PHILLIES_RED,
+                    opacity=0.92,
+                    stroke="#ffffff",
+                    strokeWidth=1.2,
+                )
+                .encode(**encoding)
+            )
+
+        if layers:
+            scatter_chart = style_chart(alt.layer(*layers).interactive(), height=380)
+            st.altair_chart(scatter_chart, use_container_width=True)
+        else:
+            render_skeleton_block("EV / launch-angle scatter loading", kind="chart")
 
 top_left, top_right = st.columns(2)
 

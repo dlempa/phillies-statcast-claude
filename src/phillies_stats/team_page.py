@@ -21,6 +21,7 @@ from phillies_stats.ui import (
     format_timestamp,
     render_page_header,
     render_section_heading,
+    render_skeleton_block,
     render_stat_cards,
     style_chart,
 )
@@ -76,7 +77,9 @@ def render_team_stats_page() -> None:
         with st.container(border=True):
             render_section_heading("NL East Standings")
             if standings.empty:
-                st.info("NL East standings will appear after the team context refresh runs.")
+                render_skeleton_block(
+                    "NL East standings will appear after the team context refresh runs", kind="table"
+                )
             else:
                 display = standings.rename(
                     columns={
